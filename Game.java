@@ -3,36 +3,62 @@ import java.util.Scanner;
  * The program is used to gather different classes to work as a connect-four game
  * You can decide the size of grid and the number of pieces to be connected for victory
  * @author Weixiong Zhang
- *
+ * @author Adam Geringer
+ * @author Bozack Goodirich
+ * @author Edgar Woode
  */
 public class Game {
+	/** first player */
+	private players playerOne;
+	
+	/** second player */
+	private players playerTwo;
+	
 	/**
 	 * The main method prompts the players for basic board and game settings
 	 * follow the instructions to enter CORRECT INTEGERS
 	 * @param args
 	 */
     public static void main(String[] args) {
-        Scanner in = new Scanner(System.in);
-    	System.out.println("Start board setting");
-        System.out.print("Please set required connect number of pieces.");
-        while (!in.hasNextInt()) {  //Cases that the input is not integer
-            System.out.println("Invalid input, the input number must be an integer");
-            in.next();
+    	String reply = "Y";
+    	Scanner in = new Scanner(System.in);
+    	System.out.print("Player 1 enters his/her name: ");
+    	String name1 = in.next();
+    	System.out.print("Player 2 enters his/her name: ");
+    	String name2 = in.next();
+    	players playerOne = new players(0, name1);
+    	players playerTwo = new players(0, name2);
+    	while(1==1) {
+    	    System.out.println("Start board setting");
             System.out.print("Please set required connect number of pieces.");
-	    }
-        int connectNum = in.nextInt(); //The number needed to be connected
-        int gridRow = connectNum * 2; //number of rows and columns is the same
-        int gridColumn = connectNum * 2;
-        System.out.println("Board setting completed, the row and column numbers are " + gridRow + ".");
-        System.out.println("You have to connect " + connectNum + " pieces to win. ");
-        System.out.println("Game start");
+            while (!in.hasNextInt()) {  //Cases that the input is not integer
+                System.out.println("Invalid input, the input number must be an integer");
+                in.next();
+                System.out.print("Please set required connect number of pieces.");
+	        }
+            int connectNum = in.nextInt(); //The number needed to be connected
+            int gridRow = connectNum * 2; //number of rows and columns is the same
+            int gridColumn = connectNum * 2;
+            System.out.println("Board setting completed, the row and column numbers are " + gridRow + ".");
+            System.out.println("You have to connect " + connectNum + " pieces to win. ");
+            System.out.println("Game start");
         
-        CEBoard Board = new CEBoard(gridRow, gridColumn); //Get a board set from sub-class
-        int rowAndColumn = Board.getNumberOfRows(); //get the row/column number
+            CEBoard Board = new CEBoard(gridRow, gridColumn); //Get a board set from sub-class
+            int rowAndColumn = Board.getNumberOfRows(); //get the row/column number
     	
-    	char[][] Grid = new char[rowAndColumn][rowAndColumn]; //create the board for the game
-    	displayGrid(Grid); //construct the grid
-    	playConnectFour(Grid, in, connectNum); //start playing
+    	    char[][] Grid = new char[rowAndColumn][rowAndColumn]; //create the board for the game
+    	    displayGrid(Grid); //construct the grid
+    	    playConnectFour(Grid, in, connectNum, playerOne, playerTwo); //start playing
+    	    
+    	    
+    	    
+    	    System.out.println("Rounds Won: "+ playerOne.toString() +": " + playerOne.getGamesWon() + " ; " + playerTwo.toString() + ": " + playerTwo.getGamesWon());
+    	    System.out.print("Do you want to continue playing the game?(Y/N)");
+    	    reply = in.next();
+        	if (reply.equalsIgnoreCase("N")) {
+    		    System.exit(1);
+        	}
+    	}
     }
     
     /**
@@ -59,7 +85,7 @@ public class Game {
      * @param input
      * @param connectNum
      */
-    public static void playConnectFour(char[][] Grid, Scanner input, int connectNum) {
+    public static void playConnectFour(char[][] Grid, Scanner input, int connectNum, players playerOne, players playerTwo) {
     	boolean gameOver = false;
     	boolean playersTurn = true; //true, player1's turn; else, player2's turn
     	int columnPosition = 0;
@@ -97,9 +123,15 @@ public class Game {
     		    playersTurn = !playersTurn; 
     		} else {
     		    displayGrid(Grid); //If it's not full, grid should be shown
-    		    if (gameStatus(Grid, columnPosition, shape, connectNum)) { //If connect is achieved
+    		    if (gameStatus(Grid, columnPosition, shape, connectNum, playerOne, playerTwo)) { //If connect is achieved
     		    	gameOver = true;
-    		    	System.out.println(shape + " player wins!");
+    		    	if (shape == 'O') {
+    		    		System.out.println(playerOne.toString() + " wins!");
+    		    		playerOne.updateGamesWon();
+    		    	} else if (shape == 'X') {
+    		    		System.out.println(playerTwo.toString() + " wins!");
+    		    		playerTwo.updateGamesWon();
+    		    	}
     		    }
     		    else if (checkFull(Grid)) { //If the board is full
     		    	gameOver = true;
@@ -107,7 +139,7 @@ public class Game {
     		    }
     		}
     	}
-    	input.close();
+
     }
     
     /**
@@ -133,7 +165,7 @@ public class Game {
      * @param connectNum
      * @return
      */
-    public static boolean gameStatus(char[][] Grid, int columnPosition, char shape, int connectNum) {
+    public static boolean gameStatus(char[][] Grid, int columnPosition, char shape, int connectNum, players playerOne, players playerTwo) {
     	int rowPosition = 0;
     	for (int i = 0; i < Grid.length; i++) {
     		if (Grid[i][columnPosition] != 0) {
@@ -316,10 +348,14 @@ public class Game {
     public static void displayGrid(char[][] Grid) {
     	for (int i = 0; i < Grid.length; i++) {
     		for (int j = 0; j< Grid[i].length; j++) {
-    			System.out.print("|" + Grid[i][j]);
+                if (Grid[i][j] == 0) {
+        			System.out.print("| " + Grid[i][j]);
+                } else {
+                    System.out.print("|" + Grid[i][j]);
+                    }
     			
     		}
-    		System.out.println("|");
+    		System.out.println("| ");
     	}
     	for (int i = 0; i<Grid.length; i++) {
     		System.out.print(" " + (i+1));
